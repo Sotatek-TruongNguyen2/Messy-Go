@@ -10,12 +10,9 @@ on:
     branches: ["main"]
 
 jobs:
-  # Label of the container job
-  container-job:
-    # Containers must run in Linux based operating systems
+  test:
+    name: Test
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
-    container: node:20-bookworm-slim
 
     # Service containers to run with `container-job`
     services:
@@ -37,9 +34,7 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
-  test:
-    name: Test
-    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
