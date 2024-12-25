@@ -10,6 +10,33 @@ on:
     branches: ["main"]
 
 jobs:
+  # Label of the container job
+  container-job:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: node:20-bookworm-slim
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:16
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: postgres
+          POSTGRES_DB: simple_bank
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -20,6 +47,15 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.23.4"
+
+      - name: Install go-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-386.tar.gz | tar xvz
+          sudo move migrate /usr/bin
+          which migrate
+
+      - name: Do the migrations
+        run: make migrateup
 
       - name: Build
         run: go build -v ./...
